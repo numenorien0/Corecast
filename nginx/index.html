@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intercom</title>
+  <link rel="stylesheet" href="../node_modules/boxicons/css/boxicons.min.css">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #000;
+    }
+    #controls {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: fixed;
+      left: 10px;
+      top: 10px;
+      gap: 10px;
+      bottom: 10px;
+      margin: auto;
+    }
+    button {
+      padding: 10px;
+      font-size: 24px;
+      width: 80px;
+      height: 80px;
+      background-color: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+	  -webkit-backdrop-filter: blur(10px);
+      border-radius: 50%;
+      border: none;
+    }
+    button.active {
+		background-color: rgba(255, 255, 255, 1);
+    }
+	#toggleCall{
+		opacity: 1;
+		background: rgb(0,216,0);
+		color: #fff;
+	}
+	#toggleCall.active{
+		background: rgb(216,0,0)
+	}
+    select{
+        position: fixed;
+        top: 30px;
+        left: 0;
+        right: 0;
+        margin: auto;
+        width: 300px;
+        font-size: 24px;
+        background-color: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		border: none;
+		color: #000;
+
+    }
+    video {
+      display: block;
+      max-width: 100%;
+      width: calc(100% - 10px);
+      height: calc(100vh - 10px);
+      object-fit: contain;
+    }
+	.start{
+		backdrop-filter: blur(20px);
+		display: flex;
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: 2000;
+		left: 0; top: 0;
+		flex-direction: column;
+		color: #fff;
+	}
+	#startButton{
+		margin: auto;
+		font-size: 24px;
+		width: fit-content;
+		height: fit-content;
+		border-radius: 4px;
+		color: #333333;
+		opacity: 1;
+	}
+  </style>
+</head>
+<body>
+	<div class="start">
+		<div style='margin: auto; display: flex; flex-direction: column;'>
+			<span style="margin: auto; text-align: center; margin-bottom: 15px; max-width: 80%">Start using your browser or add this shortcut on your homescreen</span>
+			<button id="startButton">Start !</button>
+		</div>
+	</div>
+  <div id="controls">
+    <!-- Sélecteur de caméra -->
+    <select id="cameraSelect">
+      <option value="intercom1">Cameraman 1</option>
+      <option value="intercom2">Cameraman 2</option>
+      <option value="intercom3">Cameraman 3</option>
+      <option value="intercom4">Cameraman 4</option>
+      <option value="intercom5">Cameraman 5</option>
+      <option value="intercom6">Cameraman 6</option>
+      <option value="intercom7">Cameraman 7</option>
+      <option value="intercom8">Cameraman 8</option>
+    </select>
+    <!-- Bouton call/hangup -->
+    <button id="toggleCall"><i class='bx bxs-phone' ></i></button>
+    <!-- Bouton mute/unmute -->
+    <button id="toggleMute" class='active'><i class='bx bxs-microphone' ></i></button>
+  </div>
+  <video autoplay playsinline id="AV"></video>
+  <script src="../js/peer.js"></script>
+  <script>
+    // Récupère une piste vidéo factice pour négocier la vidéo
+
+    const pathname = window.location.pathname;
+    const uniqueRoute = pathname.split("/")[2];
+
+    function getDummyVideoTrack() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 640;
+      canvas.height = 480;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Capture le flux du canvas à une faible fréquence (1 fps suffit)
+      const stream = canvas.captureStream(1);
+      return stream.getVideoTracks()[0];
+    }
+
+    // Variables globales
+    let peer = null;
+    let currentCall = null;
+    let localAudioStream = null;
+    let audioTrackEnabled = true;
+    const cameraSelect = document.querySelector("#cameraSelect");
+    const toggleCallBtn = document.querySelector("#toggleCall");
+    const toggleMuteBtn = document.querySelector("#toggleMute");
+
+    // Fonction pour stopper proprement le flux audio
+    function stopLocalAudio() {
+      if (localAudioStream) {
+        localAudioStream.getTracks().forEach(track => track.stop());
+        localAudioStream = null;
+      }
+    }
+
+    // Initialisation ou réinitialisation du peer en fonction du choix de caméra
+    function init_camera() {
+        const videoElement = document.querySelector("#AV");
+        videoElement.style.border = "5px solid black";
+        
+      // Si un peer existe, on ferme l'appel, on arrête le flux audio et on détruit le peer
+      if (peer) {
+        if (currentCall) {
+          currentCall.close();
+          currentCall = null;
+          toggleCallBtn.innerHTML = `<i class='bx bxs-phone' ></i>`;
+          toggleCallBtn.classList.remove("active");
+        
+        }
+        
+        stopLocalAudio();
+        peer.destroy();
+        peer = null;
+        console.log("Ancienne connexion peer détruite.");
+      }
+      // Création du peer avec l'identifiant choisi
+      const peerId = cameraSelect.value;
+      
+      peer = new Peer(uniqueRoute+"_"+peerId /*{host: "macbook-air-de-quentin.local", port: 9067, path: "/socket"}*/);
+      peer.on('open', function(id) {
+      });
+      // Gestion de la réception des messages via data channel
+      peer.on('connection', function(conn) {
+        conn.on('data', function(data) {
+          try {
+            let message = (typeof data === "string") ? JSON.parse(data) : data;
+            if(message.action === "videoStatus"){
+              // Transforme AZER-TYUI_intercomX en cameraX
+              let localCam = cameraSelect.value.replace("intercom", "camera");
+              let isPgm = message.pgm.some(cam => cam.device === localCam);
+              let isPreview = message.preview.some(cam => cam.device === localCam);
+              const videoElement = document.querySelector("#AV");
+              if(isPgm) {
+                videoElement.style.border = "5px solid red";
+              } else if(isPreview) {
+                videoElement.style.border = "5px solid green";
+              } else {
+                videoElement.style.border = "5px solid black";
+              }
+            }
+          } catch(e) {
+            console.error("Erreur lors du traitement du message", e);
+          }
+        });
+      });
+      peer.on('error', function(err) {
+        alert("Erreur du peer :" + err);
+      });
+
+    }
+
+	document.querySelector("#startButton").addEventListener("click", (e) => {
+		document.querySelector(".start").style.display = "none";
+		init_camera();
+	})
+    // Appel initial
+    
+
+    // Gestion du bouton Call / Close
+    toggleCallBtn.addEventListener("click", function() {
+      // Si un appel est en cours, le fermer
+      if (currentCall) {
+        currentCall.close();
+        currentCall = null;
+        document.querySelector("#AV").style.border = "5px solid black";
+        toggleCallBtn.classList.remove("active");
+        toggleCallBtn.innerHTML = `<i class='bx bxs-phone' ></i>`;
+        return;
+      }
+      // Sinon, lancer l'appel
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(audioStream) {
+          localAudioStream = audioStream;
+          toggleMuteBtn.classList.add("active");
+            toggleMuteBtn.innerHTML = `<i class='bx bxs-microphone' ></i>`;
+          const combinedStream = new MediaStream();
+          // Ajout de la piste audio
+          audioStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
+          // Ajout d'une piste vidéo factice
+          const dummyVideoTrack = getDummyVideoTrack();
+          combinedStream.addTrack(dummyVideoTrack);
+
+          // Identifiant du peer distant (fixe dans cet exemple)
+          let remotePeerId = uniqueRoute;
+          currentCall = peer.call(remotePeerId, combinedStream);
+          if (!currentCall) {
+            console.error("L'appel n'a pas pu être initié. Vérifiez que le peer distant est en ligne et la configuration est correcte.");
+            return;
+          }
+          toggleCallBtn.innerHTML = `<i class='bx bxs-phone-off' ></i>`;
+          toggleCallBtn.classList.add("active");
+          currentCall.on('stream', function(remoteStream) {
+            document.querySelector("#AV").srcObject = remoteStream;
+          });
+          currentCall.on('close', function() {
+            toggleCallBtn.innerHTML = `<i class='bx bxs-phone' ></i>`;
+            currentCall = null;
+            toggleCallBtn.classList.remove("active");
+            console.log("Appel terminé.");
+          });
+        })
+        .catch(function(err) {
+          console.error("Échec de l'accès au flux audio", err);
+        });
+    });
+
+    // Gestion du bouton mute/unmute
+    toggleMuteBtn.addEventListener("click", function() {
+        if (!localAudioStream) return;
+        localAudioStream.getAudioTracks().forEach(track => {
+            audioTrackEnabled = !track.enabled;
+            track.enabled = audioTrackEnabled;
+        });
+        audioTrackEnabled ? toggleMuteBtn.classList.add("active") : toggleMuteBtn.classList.remove("active");
+        toggleMuteBtn.innerHTML = audioTrackEnabled ? `<i class='bx bxs-microphone' ></i>` : `<i class='bx bxs-microphone-off' ></i>`;
+    });
+
+    cameraSelect.addEventListener("change", function() {
+        init_camera();
+    });
+  </script>
+</body>
+</html>

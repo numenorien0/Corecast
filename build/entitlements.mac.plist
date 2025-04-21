@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Désactive le sandbox macOS, ce qui est courant pour les apps Electron -->
+    <key>com.apple.security.app-sandbox</key>
+    <false/>
+
+    <!-- Autorise l'utilisation du JIT (JavaScript Just-In-Time) -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+
+    <!-- Autorise le débogage (utile si vous utilisez un crash reporter, dev tools, etc.) -->
+    <key>com.apple.security.cs.debugger</key>
+    <true/>
+
+    <!-- Permet de charger des bibliothèques non signées (modules natifs Electron, etc.) -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+
+    <!-- Autorise l'exécution de mémoire non signée (souvent nécessaire pour Electron) -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+
+    <!-- Autorise l'accès réseau sortant (client) -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+
+    <!-- Autorise l'accès réseau entrant (si l'app héberge un serveur local ou écoute un port) -->
+    <key>com.apple.security.network.server</key>
+    <true/>
+
+    <!-- Autorise la lecture/écriture de fichiers sélectionnés par l’utilisateur (open/save dialogs) -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+
+    <key>com.apple.security.device.audio-input</key>
+    <true/>
+    <key>com.apple.security.device.camera</key>
+    <true/>
+    
+</dict>
+</plist>

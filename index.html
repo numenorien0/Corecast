@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Corecast</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="node_modules/boxicons/css/boxicons.min.css">
+    <link rel="stylesheet" href="node_modules/@awesome.me/kit-e4e505f939/icons/css/all.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+    <script src="js/peer.js"></script>
+
+
+</head>
+<body>
+    <div id="welcome">
+        <h1><span id='welcomeMessage'>Welcome To Corecast</span><br/><span id="clickToContinue">Click to continue</span></h1>
+    </div>
+    <div id="loader">
+        <i class='bx bx-loader-alt bx-spin bx-rotate-180' ></i>
+    </div>
+    <div id="top_bar">
+        <div class="top_bar_inner">
+            <div class="recOption">
+                <record-buttons></record-buttons>
+            </div>
+            <timer-view></timer-view>
+            <div class="perfs">
+                <div id="cpuLoad">CPU : --%</div>
+                <div id="ramLoad">RAM : --%</div>
+            </div>
+        </div>
+    </div>
+    <div class="view">
+        <modal-view show="false" title="" content=""></modal-view>
+        <multi-viewer unique_id="multiviewer" class='mainViews active' style="width: 100%; height: 100%; padding: 0; margin: 0"></multi-viewer>
+        <audio-viewer unique_id="audioviewer" class='mainViews inactive' style="width: 100%; height: 100%; padding: 0; margin: 0"></audio-viewer>
+        <players-container unique_id="mediaplayer" class="mainViews inactive" style="width: 100%; height: 100%; padding: 0; margin: 0"></players-container>
+        <div main="true" unique_id="ptz" class="mainViews inactive" style="display: flex; width: 100%; height: 100%; padding: 0; margin: 0">
+            <ptz-control style="width: calc(100% - 400px); height: 100%; margin: auto"></ptz-control>
+            <ptz-list style="width: 400px; margin: auto; overflow: auto; height: 100%; "></ptz-list>
+        </div>
+        <intercom-viewer unique_id="intercom" class="mainViews inactive" style="width: 100%; height: 100%; padding: 0; margin: 0"></intercom-viewer>
+    </div>
+      <div id="bottom_bar">
+        <div class="bottom_bar_inner">
+            <menu-bottom></menu-bottom>
+            
+        </div>
+    </div>
+	<script src="canvastowebgl/gl-matrix-min.js"></script>
+	<script src="canvastowebgl/litegl.js"></script>
+	<script src="canvastowebgl/Canvas2DtoWebGL.js"></script>
+    <script type="module" src="app.js"></script>
+    <script type="module" src="js/streamdeck.js"></script>
+    <script type="module" src="js/shortcuts.js"></script>
+    <script type="module" src="js/midiEvents.js"></script>
+    <script type="module" src="js/events.js"></script>
+    <script type="module" src="js/components.js"></script>
+	<script type="module" src="js/transitions.js"></script>
+      
+
+</body>
+</html>
